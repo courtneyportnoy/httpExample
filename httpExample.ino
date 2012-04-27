@@ -47,7 +47,7 @@ Adafruit_VC0706 cam = Adafruit_VC0706(&cameraconnection);
 /////////////////////////////
 //SETUP
 void setup(){
-  Serial.begin(576000);
+  Serial.begin(9600);
 
   // see if the card is present and can be initialized:
   if (!SD.begin(chipSelect)) {
@@ -74,7 +74,7 @@ void setup(){
   }
   Serial.println("Connected to wifi");
   //printWifiStatus();
-  httpRequest("IMAGE10.JPG");
+  httpRequest("IMAGE14.JPG");
 
 }
 
@@ -90,7 +90,7 @@ void httpRequest(String thisFile) {
   File myFile = SD.open(fileName);
   unsigned long contentLength = myFile.size();
   Serial.println(contentLength);
-  
+
   // if there's a successful connection:
   if (client.connect(server, 80)) {
     Serial.println("connecting...");
@@ -112,21 +112,25 @@ void httpRequest(String thisFile) {
     client.print("Content-Disposition: form-data; name=\"file\"; filename=");
     client.println(fileName);
     client.println("Content-Type: image/jpeg");
+    pinMode(8, OUTPUT);
+    int bytes = 0;
 
-  int bytes = 0;
-    //[actual bytes of the file go here
     // read from the file until there's nothing else in it:
     while (myFile.available()) {
+
       client.write(myFile.read());
       bytes++;
-      Serial.println(bytes);
+      if(bytes%10 == 0) {
+        Serial.println(bytes);
+      }
     }
     // close the file:
     myFile.close();
 
     client.println("------H4rkNrF--");
-
-
+    Serial.println("Done!");
+    client.println(F("Connection: close"));
+    client.println();
 
     // note the time that the connection was made:
     lastConnectionTime = millis();
@@ -138,5 +142,8 @@ void httpRequest(String thisFile) {
     client.stop();
   }
 }
+
+
+
 
 
